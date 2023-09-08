@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豆瓣250排行</title>
+    <!-- 引入vue3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+        html{
+            font-size: 1.5vw;
+        }
+        html,body,#app{
+            width: 100vw;
+            line-height: 2.7em;
+            font-family: Microsoft YaHei,Helvetica,Arial,sans-serif;
+        }
+
+        a{
+            text-decoration: none;
+            color: cornflowerblue;
+            font-size: 2.8vw;
+        }
+        ol{
+            list-style: none;
+        }
+        
+        h1{
+            margin-left: 7.5vw;
+            height: 6vw;
+            line-height: 6vw;
+        }
+
+        ol li{
+            position: relative;
+            width: 92.5vw;
+            height: 25vw;
+            margin-bottom: 3vw;
+            margin-left: 3vw;
+        }
+
+        .grid-view{
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board-index{
+            display: inline-block;
+            width: 6vw;
+            height: 6vw;
+            line-height: 6vw;
+            text-align: center;
+            background:darkorange;
+            font-size: 1.6vw;
+            color: #ff0000;
+            font-weight: 900;
+            position: absolute;
+            top: 9vw;
+        }
+
+        
+
+        .board-img{
+            height: 25vw;
+            width: 17vw;
+            margin-left: 9vw;
+        }
+
+        .title{
+            display: block;
+            color: cornflowerblue;
+            white-space:nowrap;
+            word-break: break-all;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .board-main{
+            display:inline-block;
+            width: 60vw;
+            margin-left: 4.5vw;
+            height: 25vw;
+            border-bottom: 1px solid #e5e5e5;
+            vertical-align: text-bottom;
+        }
+
+        .paging{
+            display: block;
+            width: 100vw;
+            height: 9vw;
+            text-align: center;
+        }
+
+        .paging li{
+            display: inline-block;
+            width: 3.2vw;
+            height: 3.2vw;
+            line-height: 3.2vw;
+            background-color: darksalmon;
+            padding: 1vw;
+            margin: 0 1vw;
+            user-select: none;
+        }
+
+        .paging li:hover{
+            cursor: pointer;
+            background-color:burlywood;
+        }
+
+        p{
+            overflow: hidden;
+            word-wrap: break-word;
+            white-space:nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .score span{
+            color: #e09015;
+        }
+
+        /* 媒体查询，PC端适配 */
+        @media screen and (min-width: 690px){
+            html{
+                font-size: 20px;
+            }
+
+            html,body,#app{
+                width: 100%;
+                line-height: 1.5em;
+            }
+
+            a{
+                font-size: 20px;
+            }
+
+            h1{
+                margin-left: 50px;
+                height: 50px;
+                line-height: 50px;
+            }
+
+            .grid-view{
+                width: 100%;
+            }
+
+            .grid_view li{
+                display: inline-block;
+                width: 45%;
+                min-width: 690px;
+                height: 180px;
+                margin: 0 0 20px 20px;
+            }
+            
+            .board-index{
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 18px;
+                top: 60px;
+            }
+
+            .board-img{
+                height: 180px;
+                width: 120px;
+                margin-left: 50px;
+            }
+
+            .board-main{
+                width: 500px;
+                margin-left: 10px;
+                height: 180px;
+            }
+
+            .paging{
+                width: 100%;
+                height: 50px;
+            }
+
+            .paging li{
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                padding: 10px;
+                margin: 0 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <h1>豆瓣影评TOP 250</h1>
+        <ol class="grid_view">
+            <!-- 使用v-for指令进行数据渲染 -->
+            <li v-for="movie in moviesMsg.list.slice((moviesMsg.currentPage-1)*moviesMsg.maxItem,moviesMsg.currentPage*moviesMsg.maxItem)" :key="movie.id">
+                <i class="board-index">
+                    {{movie.ranking}}
+                </i>
+                <a :href="movie.detail_link">
+                    <img :src="movie.cover_link" class="board-img">
+                </a>
+                <div class="board-main">
+                    <a :href="movie.detail_link" class="title">{{movie.movie_name}}</a>
+                    <p class="directors">{{movie.director}}</p>
+                    <p class="actors">{{movie.actor}}</p>
+                    <p class="type">{{movie.release_date}} / {{movie.country}} / {{movie.movie_type}}</p>
+                    <p class="score">评分：<span>{{movie.rating}}</span></p>
+                    <p class="review">“{{movie.comment}}”</p>
+                </div>
+            </li>
+        </ol>
+        <!-- 分页模块 -->
+        <ul class="paging">
+            <li v-for="index of moviesMsg.list.length/moviesMsg.maxItem" :key="index" @click="changePage(index)" >{{index}}</li>
+            <a href="javascript:scroll(0,0)" style="font-size: 1.5vw;">返回顶部</a>
+        </ul>
+    </div>
+    <script>
+        //从vue引入需要的生命周期、函数等等
+        const { createApp, reactive } = Vue
+        const app = createApp({
+            setup() {
+                /* 电影数据 */
+                let moviesMsg = reactive({
+                    list:[], // 数据列表
+                    currentPage:1, // 当前页
+                    maxItem:25, // 一页最多有25个电影信息
+                    total:250 // 一共有250个电影信息
+                })
+
+                // 这个函数用于改变当前页
+                function changePage(v){
+                    moviesMsg.currentPage = v
+                }
+
+                // 这个函数用于获取电影信息
+                function getMovies(){
+                    axios("http://127.0.0.1:5000/movies",{
+                        headers: {
+                            //可以跨域请求
+                            "Access-Control-Allow-Origin":"*"
+                        },
+                    }).then(res=>{
+                        console.log(res);
+                        // 后端给的数据没有排好顺序，所以要用sort进行升序排列
+                        moviesMsg.list = res.data.sort((o1,o2)=>{
+                            return o1.ranking - o2.ranking
+                        })
+
+                        // 爬虫爬取的图片路径有问题，这里用正则替换统一下路径
+                        moviesMsg.list.map((item)=>{
+                            item.cover_link = item.cover_link.replace(/img./,'img2')
+                        })
+                    }).catch(err=>{
+                        console.log(err);
+                    })
+                }
+                getMovies()
+
+                // 将需要的响应式变量与函数return出去
+                return {
+                    moviesMsg,
+                    getMovies,
+                    changePage
+                }
+            }
+        })
+        app.mount('#app')
+    </script>
+</body>
+
+</html>
